@@ -1,4 +1,6 @@
-# LPrinter — localStorage HTML → PDF
+### LPrinter 
+
+localStorage HTML → PDF
 
 A browser-only PDF printer. The **left panel** holds the PDF configuration, and the
 **right panel** shows the rendered PDF built from HTML stored in
