@@ -98,7 +98,8 @@ and keep the payload reasonably small.
 - **PDF configuration** (left): filename, **Use filename as header** (on by
   default — prepends an `<h1>` with the filename), theme template (`Mint Deck`,
   `Navy Deck` or `Olive Deck`; all share the same Poppins font, size, spacing
-  and layout, with different colours), **Google Font family** (paste a family
+  and layout, with different colours; Olive Deck colours H1-H3 and the
+  blockquote bar with `#6a5e44`), **Google Font family** (paste a family
   name or a Google Fonts link to override the theme font), page size,
   page numbers, table of contents, **Index table of contents** (on by default —
   numbers entries `1.`, `1.1.` … with page indices), footer text and watermark.

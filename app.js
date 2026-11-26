@@ -193,16 +193,22 @@
 
   // Tint the neutral white/light-gray surfaces with the theme's primary colour.
   // Tables use a darkened shade of the theme colour for the header and light borders on white rows.
-  function themeColors(primary) {
+  function themeColors(primary, themeKey) {
     const p = /^#[0-9a-f]{6}$/i.test(primary || '') ? primary : THEMES.mint.primary;
+    // Olive Deck is the only preset whose H1-H3 headings use its palette colour;
+    // the other presets keep the neutral heading colour. The quote bar always
+    // follows the active theme colour.
+    const oliveHeadings = themeKey === 'olivedeck' || p.toLowerCase() === '#6a5e44';
     return {
       background: '#ffffff',
       surface: mix(p, '#ffffff', 0.94),
       surfaceAlt: mix(p, '#ffffff', 0.88),
       text: '#1f2328',
       heading: '#1f2328',
+      headingEmphasis: oliveHeadings ? p : '#1f2328',
       muted: '#656d76',
       accent: p,
+      quoteBar: p,
       border: mix(p, '#ffffff', 0.78),
       link: p,
       quoteText: '#3a4048',
@@ -489,7 +495,7 @@
         tocIndex: state.tocIndex,
         footerText: state.footerText,
         watermark: state.watermark,
-        colors: themeColors(state.primary),
+        colors: themeColors(state.primary, state.theme),
         fonts: fonts
       };
       const pdf = new pdfFromHtml(pdfOptions);
