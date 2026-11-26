@@ -85,7 +85,7 @@
             </div>
           </section>
 
-          <p class="config-note">Source: <code>localStorage.HTML_TO_BE_PRINT</code>. Changes are applied 2 seconds after you stop typing.</p>
+          <p class="config-note">Source: base64 HTML in the page URL (<code>?html=…</code>). Changes are applied 2 seconds after you stop typing.</p>
         </div>
       </section>
 
@@ -103,7 +103,7 @@
           </div>
 
           <div class="panel__actions">
-            <button class="gh-btn" id="refreshBtn" type="button" title="Re-read localStorage and rebuild the PDF (Ctrl+Enter)">
+            <button class="gh-btn" id="refreshBtn" type="button" title="Re-read the URL and rebuild the PDF (Ctrl+Enter)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/>
               </svg>
@@ -135,7 +135,8 @@
                 </svg>
               </span>
               <h2>No content found</h2>
-              <p>There is no HTML saved in <code>localStorage.HTML_TO_BE_PRINT</code>.</p>
+              <p>No HTML was passed in the page URL. Add <code>?html=&lt;base64&gt;</code> with UTF-8 base64-encoded HTML.</p>
+              <p id="sourceOrigin" class="empty-state__origin"></p>
               <button id="retryBtn" class="gh-btn" type="button">Check again</button>
             </div>
           </div>
@@ -153,7 +154,7 @@
 
         <div class="panel__footer meta-footer">
           <span id="status" class="text-muted">Ready</span>
-          <span class="meta-footer__source">Source · localStorage.HTML_TO_BE_PRINT</span>
+          <span class="meta-footer__source">Source · URL ?html=&lt;base64 UTF-8&gt;</span>
         </div>
       </section>
 

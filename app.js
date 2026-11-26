@@ -149,9 +149,11 @@
     };
   }
 
-  const STORAGE_KEY = 'HTML_TO_BE_PRINT';
   const OPTIONS_KEY = 'lprinter:options';
   const RENDER_DELAY_MS = 2000;
+  const POLL_INTERVAL_MS = 1000;
+  // The HTML is passed in the page URL as base64, e.g. ?html=<base64>.
+  const URL_KEYS = ['html', 'data', 'content', 'b64', 'base64', 'htmlbase64'];
 
   const $ = (id) => document.getElementById(id);
   // localStorage can be unavailable for file:// pages in some browsers.
@@ -231,17 +233,82 @@
     return;
   }
 
-  // ---------- source from localStorage ----------
+  // ---------- base64 codec (UTF-8 safe) ----------
+  function utf8ToBase64(str) {
+    const utf8Bytes = new TextEncoder().encode(String(str));
+    let binaryString = '';
+    const chunkSize = 0x8000; // Process chunks of 32KB to avoid memory issues
+    for (let i = 0; i < utf8Bytes.length; i += chunkSize) {
+      const chunk = utf8Bytes.subarray(i, i + chunkSize);
+      binaryString += String.fromCharCode.apply(null, chunk);
+    }
+    return btoa(binaryString);
+  }
+
+  function base64ToUtf8(str) {
+    const binaryString = atob(str);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return new TextDecoder().decode(bytes);
+  }
+
+  // Expose the codec so a URL can also be built from the browser console:
+  // LPrinterCodec.utf8ToBase64('<h1>Hi</h1>')
+  window.LPrinterCodec = { utf8ToBase64: utf8ToBase64, base64ToUtf8: base64ToUtf8 };
+
+  // ---------- source from URL ----------
   const SANITIZE_CONFIG = {
     ADD_ATTR: ['align', 'style', 'type', 'checked', 'disabled'],
     ADD_DATA_URI_TAGS: ['img']
   };
 
+  let sourceProblem = '';
+
+  function normalizeBase64(value) {
+    // URLSearchParams turns a raw "+" into a space. Base64 never contains a
+    // space, so restore it; also accept URL-safe base64 and missing padding.
+    let s = String(value || '').replace(/ /g, '+').replace(/[\r\n\t]+/g, '');
+    s = s.replace(/-/g, '+').replace(/_/g, '/');
+    while (s.length % 4) s += '=';
+    return s;
+  }
+
+  function base64FromLocation() {
+    const params = new URLSearchParams(location.search);
+    for (const [key, value] of params.entries()) {
+      if (URL_KEYS.indexOf(key.toLowerCase()) >= 0 && value) return value;
+    }
+    const hash = location.hash.replace(/^#/, '');
+    if (!hash) return '';
+    const hashParams = new URLSearchParams(hash);
+    for (const [key, value] of hashParams.entries()) {
+      if (URL_KEYS.indexOf(key.toLowerCase()) >= 0 && value) return value;
+    }
+    // A bare base64 payload in the hash is accepted too.
+    return /^[A-Za-z0-9+/\-_=\s]+$/.test(hash) ? hash : '';
+  }
+
   function readSource() {
-    const raw = store.get(STORAGE_KEY);
-    lastSnapshot = raw;
-    if (typeof raw !== 'string' || !raw.trim()) return '';
-    return DOMPurify.sanitize(raw, SANITIZE_CONFIG);
+    lastSnapshot = location.href;
+    sourceProblem = '';
+    const payload = base64FromLocation();
+    if (!payload) return '';
+
+    let html;
+    try {
+      html = base64ToUtf8(normalizeBase64(payload));
+    } catch (err) {
+      sourceProblem = 'invalid';
+      return '';
+    }
+    if (!html.trim()) return '';
+
+    const clean = DOMPurify.sanitize(html, SANITIZE_CONFIG);
+    // Markup made only of comments/styles sanitizes to nothing — treat it
+    // the same as a missing payload instead of rendering a blank document.
+    return clean.trim() ? clean : '';
   }
 
   function showNoContent() {
@@ -255,7 +322,12 @@
     downloadBtn.disabled = true;
     printBtn.disabled = true;
     showOverlay(false);
-    setStatus('No HTML content found in localStorage.HTML_TO_BE_PRINT');
+    $('sourceOrigin').textContent = 'Looking in: ' + location.href;
+    if (sourceProblem === 'invalid') {
+      setStatus('Error: invalid base64 in URL. Use ?html=<base64>.', true);
+    } else {
+      setStatus('No HTML content found in URL. Use ?html=<base64>.');
+    }
   }
 
   function hideNoContent() {
@@ -364,10 +436,13 @@
     configTimer = window.setTimeout(generate, RENDER_DELAY_MS);
   }
 
-  // Re-check when another tab writes HTML_TO_BE_PRINT, and when this tab
-  // becomes visible again (storage events do not fire in the writing tab).
+  // Re-check the URL periodically. A history.replaceState() or hash change
+  // made from the console does not always fire an event, and the snapshot
+  // guard prevents repeated polls from resetting the debounce timer.
   function checkSource() {
-    if (store.get(STORAGE_KEY) !== lastSnapshot) scheduleGenerate();
+    if (location.href === lastSnapshot) return;
+    lastSnapshot = location.href;
+    scheduleGenerate();
   }
 
   // ---------- UI wiring ----------
@@ -431,13 +506,13 @@
     $(id).addEventListener('change', scheduleGenerate);
   });
 
-  window.addEventListener('storage', (e) => {
-    if (e.key === STORAGE_KEY || e.key === null) scheduleGenerate();
-  });
+  window.addEventListener('popstate', checkSource);
+  window.addEventListener('hashchange', checkSource);
   window.addEventListener('focus', checkSource);
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) checkSource();
   });
+  window.setInterval(checkSource, POLL_INTERVAL_MS);
 
   // ---------- restore ----------
   let savedOptions = {};
