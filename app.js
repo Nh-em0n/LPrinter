@@ -65,9 +65,9 @@
     }
   };
 
-  // Three document presets with one shared layout: Navy Deck and Olive Deck
-  // are exact Mint Deck clones (same font, size, spacing and margins) with
-  // different palettes.
+  // Every preset is an exact Mint Deck clone (same Poppins font, size, spacing
+  // and margins) with its own palette. Presets with colouredHeadings also tint
+  // H1-H3 and the blockquote bar with their palette colour.
   const THEMES = {
     mint: {
       label: 'Mint Deck', fontFamily: 'geometric', fontSize: 10,
@@ -82,7 +82,27 @@
     olivedeck: {
       label: 'Olive Deck', fontFamily: 'geometric', fontSize: 10,
       lineHeight: 1.68, paragraphGap: 11, margin: 'relaxed',
-      primary: '#6a5e44', justify: false, runningHead: true
+      primary: '#6a5e44', justify: false, runningHead: true, coloredHeadings: true
+    },
+    pinkdeck: {
+      label: 'Pink Deck', fontFamily: 'geometric', fontSize: 10,
+      lineHeight: 1.68, paragraphGap: 11, margin: 'relaxed',
+      primary: '#be185d', justify: false, runningHead: true, coloredHeadings: true
+    },
+    violetdeck: {
+      label: 'Violet Deck', fontFamily: 'geometric', fontSize: 10,
+      lineHeight: 1.68, paragraphGap: 11, margin: 'relaxed',
+      primary: '#6d28d9', justify: false, runningHead: true, coloredHeadings: true
+    },
+    indigodeck: {
+      label: 'Indigo Deck', fontFamily: 'geometric', fontSize: 10,
+      lineHeight: 1.68, paragraphGap: 11, margin: 'relaxed',
+      primary: '#4338ca', justify: false, runningHead: true, coloredHeadings: true
+    },
+    tealdeck: {
+      label: 'Teal Deck', fontFamily: 'geometric', fontSize: 10,
+      lineHeight: 1.68, paragraphGap: 11, margin: 'relaxed',
+      primary: '#115e59', justify: false, runningHead: true, coloredHeadings: true
     }
   };
 
@@ -195,17 +215,17 @@
   // Tables use a darkened shade of the theme colour for the header and light borders on white rows.
   function themeColors(primary, themeKey) {
     const p = /^#[0-9a-f]{6}$/i.test(primary || '') ? primary : THEMES.mint.primary;
-    // Olive Deck is the only preset whose H1-H3 headings use its palette colour;
-    // the other presets keep the neutral heading colour. The quote bar always
+    // Presets marked colouredHeadings tint H1-H3 with their palette colour;
+    // Mint and Navy keep the neutral heading colour. The quote bar always
     // follows the active theme colour.
-    const oliveHeadings = themeKey === 'olivedeck' || p.toLowerCase() === '#6a5e44';
+    const colorHeadings = !!(THEMES[themeKey] && THEMES[themeKey].coloredHeadings);
     return {
       background: '#ffffff',
       surface: mix(p, '#ffffff', 0.94),
       surfaceAlt: mix(p, '#ffffff', 0.88),
       text: '#1f2328',
       heading: '#1f2328',
-      headingEmphasis: oliveHeadings ? p : '#1f2328',
+      headingEmphasis: colorHeadings ? p : '#1f2328',
       muted: '#656d76',
       accent: p,
       quoteBar: p,

@@ -71,7 +71,7 @@ http://localhost:8080/LocalPrinter/index.html?filename=report&theme=navydeck&pag
 | --- | --- | --- |
 | `filename` | `name` | Download filename (without `.pdf`) |
 | `filename_as_header` | `filename_as_h1`, `use_filename_as_header`, `header` | Prepend `<h1>` with the filename (default `true`) |
-| `theme` | — | `mint`, `navydeck` (dark navy), `olivedeck` (`#6a5e44`); all share the Mint layout |
+| `theme` | — | `mint`, `navydeck`, `olivedeck` (`#6a5e44`), `pinkdeck` (`#be185d`), `violetdeck` (`#6d28d9`), `indigodeck` (`#4338ca`), `tealdeck` (`#115e59`); all share the Mint layout |
 | `font` | `font_family`, `google_font`, `googlefont` | Google Font family to use instead of the theme font, e.g. `Inter` |
 | `page_size` | `pagesize`, `size` | `A4` or `Letter` |
 | `page_number` | `page_numbers`, `pagenumbers` | Show page numbers |
@@ -96,10 +96,10 @@ and keep the payload reasonably small.
 ## Controls
 
 - **PDF configuration** (left): filename, **Use filename as header** (on by
-  default — prepends an `<h1>` with the filename), theme template (`Mint Deck`,
-  `Navy Deck` or `Olive Deck`; all share the same Poppins font, size, spacing
-  and layout, with different colours; Olive Deck colours H1-H3 and the
-  blockquote bar with `#6a5e44`), **Google Font family** (paste a family
+  default — prepends an `<h1>` with the filename), theme template (seven
+  Mint-layout presets: Mint, Navy, Olive, Pink, Violet, Indigo and Teal;
+  Olive/Pink/Violet/Indigo/Teal also colour H1-H3 and the blockquote bar),
+  **Google Font family** (paste a family
   name or a Google Fonts link to override the theme font), page size,
   page numbers, table of contents, **Index table of contents** (on by default —
   numbers entries `1.`, `1.1.` … with page indices), footer text and watermark.
