@@ -95,7 +95,8 @@ and keep the payload reasonably small.
 ## Controls
 
 - **PDF configuration** (left): filename, **Use filename as header** (on by
-  default — prepends an `<h1>` with the filename), theme template, page size,
+  default — prepends an `<h1>` with the filename), theme template (each theme
+  uses its own embedded study-friendly typeface), page size,
   page numbers, table of contents, **Index table of contents** (on by default —
   numbers entries `1.`, `1.1.` … with page indices), footer text and watermark.
 - **Rendered PDF** (right): live PDF preview built with `pdfFromHtml.js`.
