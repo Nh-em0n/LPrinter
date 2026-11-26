@@ -70,6 +70,7 @@ http://localhost:8080/LocalPrinter/index.html?filename=report&theme=slate&page_s
 | Parameter | Aliases | Effect |
 | --- | --- | --- |
 | `filename` | `name` | Download filename (without `.pdf`) |
+| `filename_as_header` | `filename_as_h1`, `use_filename_as_header`, `header` | Prepend `<h1>` with the filename (default `true`) |
 | `theme` | — | `mint`, `slate`, `navy`, `navyblue`, `ink`, `crimsonred` |
 | `page_size` | `pagesize`, `size` | `A4` or `Letter` |
 | `page_number` | `page_numbers`, `pagenumbers` | Show page numbers |
@@ -78,6 +79,8 @@ http://localhost:8080/LocalPrinter/index.html?filename=report&theme=slate&page_s
 | `watermark` | — | Faint diagonal watermark |
 
 Booleans accept `true` / `1` / `yes` / `on` and `false` / `0` / `no` / `off`.
+`filename_as_header` is not persisted: it starts enabled on every load unless the
+current URL disables it, or you uncheck it in the sidebar.
 URL-encode text values with `encodeURIComponent()` when they contain spaces or
 special characters. Extra `&` separators (e.g. `&&`) are ignored.
 
@@ -90,8 +93,9 @@ and keep the payload reasonably small.
 
 ## Controls
 
-- **PDF configuration** (left): filename, theme template, page size, page numbers,
-  table of contents, footer text and watermark.
+- **PDF configuration** (left): filename, **Use filename as header** (on by
+  default — prepends an `<h1>` with the filename), theme template, page size,
+  page numbers, table of contents, footer text and watermark.
 - **Rendered PDF** (right): live PDF preview built with `pdfFromHtml.js`.
 - **Refresh** — rebuild from the current URL payload.
 - **Print PDF** — send the rendered PDF to the browser print dialog.
@@ -102,7 +106,9 @@ and keep the payload reasonably small.
 1. `app.js` reads the base64 value from the URL, decodes it to UTF-8 with
    `atob()` + `TextDecoder`, sanitizes it, and passes it with all options
    (filename, page size, margins, font size, page numbers, colour theme, font URLs)
-   to the `pdfFromHtml` class in `pdfFromHtml.js`:
+   to the `pdfFromHtml` class in `pdfFromHtml.js`. With **Use filename as header**
+   enabled (the default), an escaped `<h1>` containing the filename is prepended
+   before conversion:
    ```js
    const pdf = new pdfFromHtml({ name: 'document', colors: {...}, fonts: {...} });
    await pdf.convert(html);

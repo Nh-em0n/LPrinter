@@ -175,6 +175,7 @@
     fontSize: THEMES.mint.fontSize,
     pageSize: 'A4',
     margin: THEMES.mint.margin,
+    filenameAsHeader: true,
     pageNumbers: true,
     autoToc: false,
     footerText: '',
@@ -369,11 +370,22 @@
       state.autoToc = $('autoToc').checked;
       state.footerText = $('footerText').value.trim();
       state.watermark = $('watermark').value.trim();
+      state.filenameAsHeader = $('filenameHeader').checked;
+
+      // Optionally use the filename as the document's first heading. Escape
+      // it through textContent so names like "a <b>" stay literal text.
+      let sourceHtml = html;
+      const documentName = ($('filename').value || '').trim();
+      if (state.filenameAsHeader && documentName) {
+        const holder = document.createElement('div');
+        holder.textContent = documentName;
+        sourceHtml = '<h1>' + holder.innerHTML + '</h1>' + sourceHtml;
+      }
 
       // Everything about the output is passed in as options — no layout code
       // remains in this file.
       const pdfOptions = {
-        name: $('filename').value || 'document',
+        name: documentName || 'document',
         pageSize: state.pageSize,
         margin: MARGINS[state.margin] || MARGINS.normal,
         fontSize: state.fontSize,
@@ -391,7 +403,7 @@
       };
       const pdf = new pdfFromHtml(pdfOptions);
 
-      await pdf.convert(html);
+      await pdf.convert(sourceHtml);
       const blob = await pdf.toBlob();
 
       if (currentUrl) URL.revokeObjectURL(currentUrl);
@@ -467,6 +479,12 @@
 
     const filename = paramValue(params, ['filename', 'name']);
     if (filename !== null && filename.trim()) $('filename').value = filename.trim();
+
+    const asHeader = parseBool(
+      paramValue(params, ['filename_as_header', 'filename_as_h1', 'use_filename_as_header', 'header']),
+      $('filenameHeader').checked
+    );
+    $('filenameHeader').checked = asHeader;
 
     const theme = paramValue(params, ['theme']);
     if (theme && THEMES[theme.trim().toLowerCase()]) applyTheme(theme.trim().toLowerCase());
@@ -563,7 +581,7 @@
     scheduleGenerate();
   });
 
-  ['pageSize', 'pageNumbers', 'autoToc', 'filename', 'footerText', 'watermark'].forEach((id) => {
+  ['pageSize', 'pageNumbers', 'autoToc', 'filename', 'filenameHeader', 'footerText', 'watermark'].forEach((id) => {
     $(id).addEventListener('input', scheduleGenerate);
     $(id).addEventListener('change', scheduleGenerate);
   });
