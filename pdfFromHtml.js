@@ -1843,10 +1843,9 @@ var pdfFromHtml = (function (global) {
     }
 
     code(b) {
-      // Code blocks used to be noticeably larger than body copy (bigger font,
-      // wide padding and a tall trailing gap). Keep them visually distinct with
-      // the card background, but size them close to the surrounding text.
-      var fs = Math.max(9, this.o.fontSize - 0.5);
+      // Keep code blocks flat (background only, no border) and a bit smaller
+      // than body copy. Padding and trailing spacing stay compact.
+      var fs = Math.max(8.5, this.o.fontSize - 1);
       var lineH = fs * 1.45;
       var pad = 10;
       var flat = [];
@@ -1860,8 +1859,7 @@ var pdfFromHtml = (function (global) {
         if (!chunk.length) return;
         var height = chunk.length * lineH + pad * 2;
         this.ensure(height);
-        this.card(this.m.left, this.y, this.contentW, height, this.C.codeBg,
-          this.C.codeBorder || this.C.border);
+        this.rect(this.m.left, this.y, this.contentW, height, this.C.codeBg);
         if (!this.measureOnly) {
           var top = this.y + pad;
           chunk.forEach(function (line) {
