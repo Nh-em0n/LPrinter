@@ -65,8 +65,9 @@
     }
   };
 
-  // Two document presets with one shared layout: Navy Deck is an exact Mint
-  // Deck clone (same font, size, spacing and margins) in a dark navy palette.
+  // Three document presets with one shared layout: Navy Deck and Olive Deck
+  // are exact Mint Deck clones (same font, size, spacing and margins) with
+  // different palettes.
   const THEMES = {
     mint: {
       label: 'Mint Deck', fontFamily: 'geometric', fontSize: 10,
@@ -77,6 +78,11 @@
       label: 'Navy Deck', fontFamily: 'geometric', fontSize: 10,
       lineHeight: 1.68, paragraphGap: 11, margin: 'relaxed',
       primary: '#0b2545', justify: false, runningHead: true
+    },
+    olivedeck: {
+      label: 'Olive Deck', fontFamily: 'geometric', fontSize: 10,
+      lineHeight: 1.68, paragraphGap: 11, margin: 'relaxed',
+      primary: '#6a5e44', justify: false, runningHead: true
     }
   };
 
