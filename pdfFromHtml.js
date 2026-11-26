@@ -1076,6 +1076,9 @@ var pdfFromHtml = (function (global) {
       if (this.o.autoToc) {
         var entries = [];
         var seen = {};
+        // Numbering mirrors heading(): level 2 is 1., level 3 is 1.1., and so
+        // on. Resetting deeper counters keeps sibling sections in sequence.
+        var headingNums = [0, 0, 0, 0, 0, 0];
         out.forEach(function (b) {
           if (b.type !== 'heading') return;
           var id = b.id || slugify(this._plain(b.inlines));
@@ -1087,7 +1090,14 @@ var pdfFromHtml = (function (global) {
           }
           seen[id] = true;
           b.id = id;
-          entries.push({ id: id, text: this._plain(b.inlines), level: b.level || 2 });
+          var lv = Math.min(Math.max(Number(b.level) || 2, 2), 6);
+          headingNums[lv]++;
+          for (var k = lv + 1; k < 6; k++) headingNums[k] = 0;
+          var num = '';
+          for (var j = 2; j <= lv; j++) {
+            if (headingNums[j]) num += headingNums[j] + '.';
+          }
+          entries.push({ id: id, text: this._plain(b.inlines), level: lv, num: num });
         }, this);
         if (entries.length) {
           var at = -1;
@@ -1133,6 +1143,7 @@ var pdfFromHtml = (function (global) {
       var renderer = new PaperRenderer(this, pdf, w, h);
       this._renderer = renderer;
       await renderer.render(blocks);
+      renderer.finishToc();
       renderer.finish();
 
       var metaTitle = this.o.title || this._detectedTitle || 'Document';
@@ -1597,10 +1608,27 @@ var pdfFromHtml = (function (global) {
       var lh = fs * this.o.lineHeight;
       var headSize = 12;
       var headLines = this.wrap([{ text: 'Contents', bold: true }], this.contentW, headSize);
-      var rows = (b.entries || []).map(function (entry) {
-        var indent = Math.max(0, (Number(entry.level) - 2) * 14);
+
+      // Reserve a fixed gutter for section numbers and space on the right for
+      // the page index, which is filled in after the whole document is laid out.
+      var entries = b.entries || [];
+      var numGutter = 0;
+      entries.forEach(function (entry) {
+        if (entry.num) numGutter = Math.max(numGutter, this.measure(entry.num, { bold: true }, fs));
+      }, this);
+      numGutter = numGutter ? numGutter + 12 : 0;
+      var pageW = this.measure('999', {}, fs) + 14;
+      var textW = Math.max(24, this.contentW - numGutter - pageW);
+
+      this.tocRows = [];
+      var rows = entries.map(function (entry) {
+        var indent = Math.min(Math.max(0, (Number(entry.level) - 2) * 9), textW / 2);
         var inlines = [{ text: entry.text, link: '#' + entry.id }];
-        return { indent: indent, lines: this.wrap(inlines, this.contentW - indent, fs) };
+        return {
+          entry: entry,
+          indent: indent,
+          lines: this.wrap(inlines, textW - indent, fs)
+        };
       }, this);
       var rowsH = rows.reduce(function (n, r) { return n + r.lines.length * lh; }, 0);
       var headH = headLines.length * headSize * 1.3;
@@ -1616,12 +1644,42 @@ var pdfFromHtml = (function (global) {
       top += 10;
 
       rows.forEach(function (row) {
-        this.drawLines(row.lines, this.m.left + row.indent, top, this.contentW - row.indent, {
-          fontSize: fs, lineHeight: lh
-        });
+        var rowTop = top;
+        if (row.entry.num) {
+          var nw = this.measure(row.entry.num, { bold: true }, fs);
+          this.drawMixed(row.entry.num, rowTop + fs, fs, { bold: true, number: true },
+            this.col('accent'), { x: this.m.left + numGutter - nw - 6 });
+        }
+        this.drawLines(row.lines, this.m.left + numGutter + row.indent, rowTop,
+          textW - row.indent, { fontSize: fs, lineHeight: lh });
+        // The heading's page is not known until later blocks are laid out, so
+        // remember where to draw the index in finishToc().
+        this.tocRows.push({ id: row.entry.id, page: this.page, top: rowTop + fs, size: fs });
         top += row.lines.length * lh;
       }, this);
       this.y = top + 6;
+    }
+
+    // Draw page indices beside TOC rows once all heading anchors are known.
+    finishToc() {
+      if (!this.tocRows || !this.tocRows.length) return;
+      var self = this;
+      var font = this.font({});
+      this.tocRows.forEach(function (row) {
+        var target = self.findAnchor('#' + row.id);
+        if (!target || !target.page) return;
+        var index = self.pages.indexOf(target.page) + 1;
+        if (!index) return;
+        var text = String(index);
+        var tw = self.host.measureSafe(font, text, row.size);
+        self.host.drawTextSafe(row.page, text, {
+          x: self.w - self.m.right - tw,
+          y: self.pdfY(row.top),
+          size: row.size,
+          font: font,
+          color: self.col('muted')
+        });
+      });
     }
 
     heading(b, next) {
