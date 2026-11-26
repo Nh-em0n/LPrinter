@@ -228,7 +228,7 @@
   // Tint the neutral white/light-gray surfaces with the theme's primary colour.
   // Tables use a darkened shade of the theme colour for the header and light borders on white rows.
   function themeColors(primary, themeKey) {
-    const p = /^#[0-9a-f]{6}$/i.test(primary || '') ? primary : THEMES.mint.primary;
+    const p = /^#[0-9a-f]{6}$/i.test(primary || '') ? primary : THEMES.navydeck.primary;
     // Presets marked colouredHeadings tint H1-H3 with their palette colour;
     // Mint and Navy keep the neutral heading colour. The quote bar always
     // follows the active theme colour.
@@ -276,17 +276,17 @@
 
   // ---------- state & DOM ----------
   const state = {
-    theme: 'mint',
-    fontFamily: THEMES.mint.fontFamily,
+    theme: 'navydeck',
+    fontFamily: THEMES.navydeck.fontFamily,
     googleFont: '',
-    primary: THEMES.mint.primary,
-    lineHeight: THEMES.mint.lineHeight,
-    paragraphGap: THEMES.mint.paragraphGap,
-    justify: THEMES.mint.justify,
-    runningHead: THEMES.mint.runningHead,
-    fontSize: THEMES.mint.fontSize,
+    primary: THEMES.navydeck.primary,
+    lineHeight: THEMES.navydeck.lineHeight,
+    paragraphGap: THEMES.navydeck.paragraphGap,
+    justify: THEMES.navydeck.justify,
+    runningHead: THEMES.navydeck.runningHead,
+    fontSize: THEMES.navydeck.fontSize,
     pageSize: 'A4',
-    margin: THEMES.mint.margin,
+    margin: THEMES.navydeck.margin,
     filenameAsHeader: true,
     pageNumbers: true,
     autoToc: false,
@@ -321,8 +321,8 @@
   // Apply a preset to the style state used by the renderer. Presets own the
   // font size and margin, so there is no separate custom mode.
   function applyTheme(id) {
-    const theme = THEMES[id] || THEMES.mint;
-    state.theme = THEMES[id] ? id : 'mint';
+    const theme = THEMES[id] || THEMES.navydeck;
+    state.theme = THEMES[id] ? id : 'navydeck';
     state.fontFamily = theme.fontFamily;
     state.primary = theme.primary;
     state.lineHeight = theme.lineHeight;
@@ -743,7 +743,7 @@
   } catch (err) {
     console.warn('Ignoring invalid saved options.', err);
   }
-  applyTheme(THEMES[savedOptions.theme] ? savedOptions.theme : 'mint');
+  applyTheme(THEMES[savedOptions.theme] ? savedOptions.theme : 'navydeck');
   if (typeof savedOptions.googleFont === 'string') $('googleFont').value = savedOptions.googleFont;
   if (savedOptions.pageSize) $('pageSize').value = savedOptions.pageSize;
   if (typeof savedOptions.pageNumbers === 'boolean') $('pageNumbers').checked = savedOptions.pageNumbers;
