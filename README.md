@@ -71,7 +71,7 @@ http://localhost:8080/LocalPrinter/index.html?filename=report&theme=navydeck&pag
 | --- | --- | --- |
 | `filename` | `name` | Download filename (without `.pdf`) |
 | `filename_as_header` | `filename_as_h1`, `use_filename_as_header`, `header` | Prepend `<h1>` with the filename (default `true`) |
-| `theme` | — | `mint`, `navydeck`, `olivedeck` (`#6a5e44`), `pinkdeck` (`#be185d`), `violetdeck` (`#6d28d9`), `indigodeck` (`#4338ca`), `tealdeck` (`#115e59`); all share the Mint layout |
+| `theme` | — | `mint`, `navydeck`, `olivedeck` (`#6a5e44`), `pinkdeck` (`#be185d`), `violetdeck` (`#6d28d9`), `indigodeck` (`#4338ca`), `tealdeck` (`#115e59`), `lightgraydeck` (`#6b7280`), `lightblackdeck` (`#27272a`); all share the Mint layout |
 | `font` | `font_family`, `google_font`, `googlefont` | Google Font family to use instead of the theme font, e.g. `Inter` |
 | `page_size` | `pagesize`, `size` | `A4` or `Letter` |
 | `page_number` | `page_numbers`, `pagenumbers` | Show page numbers |
@@ -96,9 +96,10 @@ and keep the payload reasonably small.
 ## Controls
 
 - **PDF configuration** (left): filename, **Use filename as header** (on by
-  default — prepends an `<h1>` with the filename), theme template (seven
-  Mint-layout presets: Mint, Navy, Olive, Pink, Violet, Indigo and Teal;
-  Olive/Pink/Violet/Indigo/Teal also colour H1-H3 and the blockquote bar),
+  default — prepends an `<h1>` with the filename), theme template (nine
+  Mint-layout presets: Mint, Navy, Olive, Pink, Violet, Indigo, Teal,
+  Light Gray and Light Black; all but Mint/Navy also colour H1-H3 and the
+  blockquote bar),
   **Google Font family** (paste a family
   name or a Google Fonts link to override the theme font), page size,
   page numbers, table of contents, **Index table of contents** (on by default —

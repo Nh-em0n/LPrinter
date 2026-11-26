@@ -103,6 +103,16 @@
       label: 'Teal Deck', fontFamily: 'geometric', fontSize: 10,
       lineHeight: 1.68, paragraphGap: 11, margin: 'relaxed',
       primary: '#115e59', justify: false, runningHead: true, coloredHeadings: true
+    },
+    lightgraydeck: {
+      label: 'Light Gray Deck', fontFamily: 'geometric', fontSize: 10,
+      lineHeight: 1.68, paragraphGap: 11, margin: 'relaxed',
+      primary: '#6b7280', justify: false, runningHead: true, coloredHeadings: true
+    },
+    lightblackdeck: {
+      label: 'Light Black Deck', fontFamily: 'geometric', fontSize: 10,
+      lineHeight: 1.68, paragraphGap: 11, margin: 'relaxed',
+      primary: '#27272a', justify: false, runningHead: true, coloredHeadings: true
     }
   };
 
