@@ -22,13 +22,7 @@
   const FONT_BASE = 'https://cdn.jsdelivr.net/gh/googlefonts/noto-fonts@main/hinted/ttf/';
   const LATO = 'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/lato/';
   const NOTO_SERIF = FONT_BASE + 'NotoSerif/';
-  const NOTO_SANS = FONT_BASE + 'NotoSans/';
   const POPPINS = 'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/poppins/';
-  const CRIMSON = 'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/crimsontext/';
-  const CARLITO = 'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/carlito/';
-  const PLEX_SERIF = 'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/ibmplexserif/';
-  const SPECTRAL = 'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/spectral/';
-  const CALADEA = 'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/caladea/';
   const KATEX = 'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/fonts/';
   const EMOJI = 'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/notoemoji/';
 
@@ -68,79 +62,21 @@
       geometricItalic: POPPINS + 'Poppins-Italic.ttf',
       geometricBold: POPPINS + 'Poppins-Bold.ttf',
       geometricBoldItalic: POPPINS + 'Poppins-BoldItalic.ttf'
-    },
-    classic: {
-      classic: CRIMSON + 'CrimsonText-Regular.ttf',
-      classicItalic: CRIMSON + 'CrimsonText-Italic.ttf',
-      classicBold: CRIMSON + 'CrimsonText-Bold.ttf',
-      classicBoldItalic: CRIMSON + 'CrimsonText-BoldItalic.ttf'
-    },
-    // Study-friendly faces: calm, wide and legible at PDF text sizes. Each
-    // theme gets its own voice while staying comfortable for long reading.
-    carlito: {
-      carlito: CARLITO + 'Carlito-Regular.ttf',
-      carlitoItalic: CARLITO + 'Carlito-Italic.ttf',
-      carlitoBold: CARLITO + 'Carlito-Bold.ttf',
-      carlitoBoldItalic: CARLITO + 'Carlito-BoldItalic.ttf'
-    },
-    plexserif: {
-      plexserif: PLEX_SERIF + 'IBMPlexSerif-Regular.ttf',
-      plexserifItalic: PLEX_SERIF + 'IBMPlexSerif-Italic.ttf',
-      plexserifBold: PLEX_SERIF + 'IBMPlexSerif-Bold.ttf',
-      plexserifBoldItalic: PLEX_SERIF + 'IBMPlexSerif-BoldItalic.ttf'
-    },
-    notosans: {
-      notosans: NOTO_SANS + 'NotoSans-Regular.ttf',
-      notosansItalic: NOTO_SANS + 'NotoSans-Italic.ttf',
-      notosansBold: NOTO_SANS + 'NotoSans-Bold.ttf',
-      notosansBoldItalic: NOTO_SANS + 'NotoSans-BoldItalic.ttf'
-    },
-    spectral: {
-      spectral: SPECTRAL + 'Spectral-Regular.ttf',
-      spectralItalic: SPECTRAL + 'Spectral-Italic.ttf',
-      spectralBold: SPECTRAL + 'Spectral-Bold.ttf',
-      spectralBoldItalic: SPECTRAL + 'Spectral-BoldItalic.ttf'
-    },
-    caladea: {
-      caladea: CALADEA + 'Caladea-Regular.ttf',
-      caladeaItalic: CALADEA + 'Caladea-Italic.ttf',
-      caladeaBold: CALADEA + 'Caladea-Bold.ttf',
-      caladeaBoldItalic: CALADEA + 'Caladea-BoldItalic.ttf'
     }
   };
 
-  // Modern document presets. Mint Deck is the reference look; the other five
-  // are rebuilt from it with their own font, size, colour, spacing and margin.
+  // Two document presets with one shared layout: Navy Deck is an exact Mint
+  // Deck clone (same font, size, spacing and margins) in a dark navy palette.
   const THEMES = {
     mint: {
       label: 'Mint Deck', fontFamily: 'geometric', fontSize: 10,
       lineHeight: 1.68, paragraphGap: 11, margin: 'relaxed',
       primary: '#0f766e', justify: false, runningHead: true
     },
-    slate: {
-      label: 'Slate Deck', fontFamily: 'carlito', fontSize: 10.5,
-      lineHeight: 1.6, paragraphGap: 10, margin: 'normal',
-      primary: '#334155', justify: true, runningHead: true
-    },
-    navy: {
-      label: 'Navy Report', fontFamily: 'plexserif', fontSize: 9.8,
-      lineHeight: 1.55, paragraphGap: 8, margin: 'narrow',
-      primary: '#1f4e79', justify: false, runningHead: true
-    },
-    navyblue: {
-      label: 'Navy Blue', fontFamily: 'notosans', fontSize: 10.4,
-      lineHeight: 1.62, paragraphGap: 9, margin: 'compact',
+    navydeck: {
+      label: 'Navy Deck', fontFamily: 'geometric', fontSize: 10,
+      lineHeight: 1.68, paragraphGap: 11, margin: 'relaxed',
       primary: '#0b2545', justify: false, runningHead: true
-    },
-    ink: {
-      label: 'Ink Paper', fontFamily: 'spectral', fontSize: 11.2,
-      lineHeight: 1.7, paragraphGap: 12, margin: 'wide',
-      primary: '#3f3f46', justify: true, runningHead: true
-    },
-    crimsonred: {
-      label: 'Crimson Red', fontFamily: 'caladea', fontSize: 10.1,
-      lineHeight: 1.66, paragraphGap: 10, margin: 'normal',
-      primary: '#a4161a', justify: false, runningHead: true
     }
   };
 
@@ -608,7 +544,7 @@
 
   // ---------- options from URL query parameters ----------
   // The HTML stays in the fragment; these control the PDF configuration.
-  // Example: ?filename=report&theme=slate&toc=true&page_number=false
+  // Example: ?filename=report&theme=navydeck&toc=true&page_number=false
   //          &footer=Confidential&watermark=DRAFT#<base64>
   function paramValue(params, names) {
     for (const name of names) {
