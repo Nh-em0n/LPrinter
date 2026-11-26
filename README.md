@@ -72,6 +72,7 @@ http://localhost:8080/LocalPrinter/index.html?filename=report&theme=slate&page_s
 | `filename` | `name` | Download filename (without `.pdf`) |
 | `filename_as_header` | `filename_as_h1`, `use_filename_as_header`, `header` | Prepend `<h1>` with the filename (default `true`) |
 | `theme` | — | `mint`, `slate`, `navy`, `navyblue`, `ink`, `crimsonred` |
+| `font` | `font_family`, `google_font`, `googlefont` | Google Font family to use instead of the theme font, e.g. `Inter` |
 | `page_size` | `pagesize`, `size` | `A4` or `Letter` |
 | `page_number` | `page_numbers`, `pagenumbers` | Show page numbers |
 | `toc` | `auto_toc`, `table_of_contents` | Insert a table of contents |
@@ -96,7 +97,8 @@ and keep the payload reasonably small.
 
 - **PDF configuration** (left): filename, **Use filename as header** (on by
   default — prepends an `<h1>` with the filename), theme template (each theme
-  uses its own embedded study-friendly typeface), page size,
+  uses its own embedded study-friendly typeface), **Google Font family** (paste
+  a family name or a Google Fonts link to override the theme font), page size,
   page numbers, table of contents, **Index table of contents** (on by default —
   numbers entries `1.`, `1.1.` … with page indices), footer text and watermark.
 - **Rendered PDF** (right): live PDF preview built with `pdfFromHtml.js`.
@@ -122,7 +124,10 @@ and keep the payload reasonably small.
    and lays it out with `pdf-lib` — real, selectable text and vector shapes.
 3. Theme presets define the base font family, size, primary colour, spacing and
    margin. Fonts are subset and embedded; built-in standard fonts are used if a
-   font download fails.
+   font download fails. A custom **Google Font family** fetches its Latin faces
+   from Google Fonts and embeds them in place of the theme font (weights that
+   share one file are embedded once); if the import fails, the theme font is used
+   instead.
 4. The resulting `Blob` is shown in the iframe preview, downloaded, or printed.
 
 ## Files

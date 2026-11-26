@@ -148,6 +148,98 @@
     return Object.assign({}, COMMON_FONTS, BASE_FONTS[fontFamily] || BASE_FONTS.sans);
   }
 
+  // Accept either a family name ("Inter", "Roboto Slab") or a link copied from
+  // Google Fonts. The CSS2 API accepts the plain family name, so strip links
+  // and any weight/subset suffix before requesting the font faces.
+  function normalizeGoogleFont(value) {
+    let family = String(value || '').trim().replace(/^['"]|['"]$/g, '');
+    if (!family) return '';
+    try {
+      const url = new URL(family);
+      if (/(^|\.)fonts\.google(apis)?\.com$/.test(url.hostname)) {
+        family = url.searchParams.get('family') ||
+          decodeURIComponent(url.pathname.split('/').filter(Boolean).pop() || '');
+      }
+    } catch (e) { /* not a URL: treat the input as a family name */ }
+    return family.split(':')[0].replace(/\+/g, ' ').trim();
+  }
+
+  // Google's CSS groups faces by unicode subset. PDFs use the latin subset;
+  // other scripts remain available through COMMON_FONTS (Bengali, Devanagari).
+  function parseGoogleFontCss(css) {
+    const faces = {};
+    const block = /\/\*\s*([^*]+?)\s*\*\/\s*@font-face\s*\{([^}]+)\}/g;
+    let m;
+    while ((m = block.exec(css))) {
+      const subset = m[1].trim();
+      const body = m[2];
+      const range = (/unicode-range:\s*([^;]+)/i.exec(body) || [])[1] || '';
+      if (subset !== 'latin' && !/U\+0000-00FF/i.test(range)) continue;
+      const style = (/font-style:\s*([^;]+)/i.exec(body) || [])[1] || 'normal';
+      const weight = (/font-weight:\s*([^;]+)/i.exec(body) || [])[1] || '400';
+      const src = (/url\(([^)]+)\)/i.exec(body) || [])[1];
+      if (!src) continue;
+      if (style.trim() === 'italic') {
+        if (weight.trim() === '400') faces.customItalic = src;
+        else faces.customBoldItalic = src;
+      } else {
+        if (weight.trim() === '400') faces.custom = src;
+        else faces.customBold = src;
+      }
+    }
+    return faces;
+  }
+
+  const googleFontUrlCache = new Map();
+
+  // Cache only the resolved URLs. Font bytes are fetched fresh per render so
+  // one failed PDF attempt can never poison a later render.
+  async function googleFontUrls(family) {
+    const name = normalizeGoogleFont(family);
+    if (!name) throw new Error('empty font family');
+    const cacheKey = name.toLowerCase();
+    if (googleFontUrlCache.has(cacheKey)) return googleFontUrlCache.get(cacheKey);
+
+    const loading = (async () => {
+      const cssUrl = 'https://fonts.googleapis.com/css2?family=' +
+        encodeURIComponent(name).replace(/%20/g, '+') +
+        ':ital,wght@0,400;0,700;1,400;1,700&display=swap';
+      const res = await fetch(cssUrl);
+      if (!res.ok) throw new Error('font list request failed');
+      const faces = parseGoogleFontCss(await res.text());
+      if (!faces.custom) throw new Error('no latin font face was returned');
+      // Fonts without dedicated italic/bold cuts still render: reuse the
+      // closest available face instead of failing the whole document.
+      faces.customItalic = faces.customItalic || faces.custom;
+      faces.customBold = faces.customBold || faces.custom;
+      faces.customBoldItalic = faces.customBoldItalic || faces.customItalic || faces.custom;
+      return faces;
+    })();
+
+    googleFontUrlCache.set(cacheKey, loading);
+    loading.catch(() => googleFontUrlCache.delete(cacheKey));
+    return loading;
+  }
+
+  async function loadGoogleFont(family) {
+    const faces = await googleFontUrls(family);
+    // Variable Google fonts often use one file for 400 and 700. Embed each
+    // distinct face once; fontFor() falls back to the regular face for any
+    // style we did not embed.
+    const keys = ['custom', 'customItalic', 'customBold', 'customBoldItalic'];
+    const seen = new Set();
+    const fonts = {};
+    for (const key of keys) {
+      const url = faces[key];
+      if (!url || seen.has(url)) continue;
+      seen.add(url);
+      const fontRes = await fetch(url);
+      if (!fontRes.ok) throw new Error('font download failed');
+      fonts[key] = await fontRes.arrayBuffer();
+    }
+    return fonts;
+  }
+
   function mix(a, b, t) {
     const ca = String(a).replace('#', '');
     const cb = String(b).replace('#', '');
@@ -204,6 +296,7 @@
   const state = {
     theme: 'mint',
     fontFamily: THEMES.mint.fontFamily,
+    googleFont: '',
     primary: THEMES.mint.primary,
     lineHeight: THEMES.mint.lineHeight,
     paragraphGap: THEMES.mint.paragraphGap,
@@ -410,6 +503,7 @@
       state.footerText = $('footerText').value.trim();
       state.watermark = $('watermark').value.trim();
       state.filenameAsHeader = $('filenameHeader').checked;
+      state.googleFont = $('googleFont').value.trim();
 
       // Optionally use the filename as the document's first heading. Escape
       // it through textContent so names like "a <b>" stay literal text.
@@ -419,6 +513,21 @@
         const holder = document.createElement('div');
         holder.textContent = documentName;
         sourceHtml = '<h1>' + holder.innerHTML + '</h1>' + sourceHtml;
+      }
+
+      // A custom Google Font overrides the theme family. If it cannot be
+      // fetched, keep rendering with the theme font and say so in the status.
+      let renderFontFamily = state.fontFamily;
+      let fonts = fontsForTheme(renderFontFamily);
+      let fontWarning = '';
+      if (state.googleFont) {
+        try {
+          fonts = Object.assign(fonts, await loadGoogleFont(state.googleFont));
+          renderFontFamily = 'custom';
+        } catch (err) {
+          console.warn('Google Font import failed; using theme font.', err);
+          fontWarning = ' (Google Font unavailable; using theme font)';
+        }
       }
 
       // Everything about the output is passed in as options — no layout code
@@ -432,14 +541,14 @@
         paragraphGap: state.paragraphGap,
         justify: state.justify,
         runningHead: state.runningHead,
-        fontFamily: state.fontFamily,
+        fontFamily: renderFontFamily,
         pageNumbers: state.pageNumbers,
         autoToc: state.autoToc,
         tocIndex: state.tocIndex,
         footerText: state.footerText,
         watermark: state.watermark,
         colors: themeColors(state.primary),
-        fonts: fontsForTheme(state.fontFamily)
+        fonts: fonts
       };
       const pdf = new pdfFromHtml(pdfOptions);
 
@@ -456,11 +565,12 @@
       const sizeKB = blob.size < 1024 * 1024
         ? (blob.size / 1024).toFixed(1) + ' KB'
         : (blob.size / 1024 / 1024).toFixed(2) + ' MB';
-      setStatus(sizeKB + ' · ' + pdf.pageCount + ' page(s)' + pdf.fontWarning);
+      setStatus(sizeKB + ' · ' + pdf.pageCount + ' page(s)' + fontWarning + pdf.fontWarning);
 
       store.set(OPTIONS_KEY, JSON.stringify({
         theme: state.theme,
         fontFamily: state.fontFamily,
+        googleFont: state.googleFont,
         primary: state.primary,
         lineHeight: state.lineHeight,
         paragraphGap: state.paragraphGap,
@@ -529,6 +639,9 @@
 
     const theme = paramValue(params, ['theme']);
     if (theme && THEMES[theme.trim().toLowerCase()]) applyTheme(theme.trim().toLowerCase());
+
+    const font = paramValue(params, ['font', 'font_family', 'fontfamily', 'google_font', 'googlefont']);
+    if (font !== null) $('googleFont').value = font;
 
     const pageSize = paramValue(params, ['page_size', 'pagesize', 'size']);
     if (pageSize) {
@@ -628,7 +741,7 @@
     scheduleGenerate();
   });
 
-  ['pageSize', 'pageNumbers', 'autoToc', 'tocIndex', 'filename', 'filenameHeader', 'footerText', 'watermark'].forEach((id) => {
+  ['pageSize', 'pageNumbers', 'autoToc', 'tocIndex', 'googleFont', 'filename', 'filenameHeader', 'footerText', 'watermark'].forEach((id) => {
     $(id).addEventListener('input', scheduleGenerate);
     $(id).addEventListener('change', scheduleGenerate);
   });
@@ -649,6 +762,7 @@
     console.warn('Ignoring invalid saved options.', err);
   }
   applyTheme(THEMES[savedOptions.theme] ? savedOptions.theme : 'mint');
+  if (typeof savedOptions.googleFont === 'string') $('googleFont').value = savedOptions.googleFont;
   if (savedOptions.pageSize) $('pageSize').value = savedOptions.pageSize;
   if (typeof savedOptions.pageNumbers === 'boolean') $('pageNumbers').checked = savedOptions.pageNumbers;
   if (typeof savedOptions.autoToc === 'boolean') $('autoToc').checked = savedOptions.autoToc;

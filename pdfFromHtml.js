@@ -331,7 +331,13 @@ var pdfFromHtml = (function (global) {
       try {
         if (global.fontkit && pdf.registerFontkit) pdf.registerFontkit(global.fontkit);
         var keys = Object.keys(urls);
-        var bytes = await Promise.all(keys.map(async function (key) {
+        // Decide before fetching: URL fonts are TTF faces that subset well,
+        // while raw ArrayBuffers are imported Google variable WOFF2 files.
+        var rawFonts = keys.map(function (key) {
+          var src = urls[key];
+          return src instanceof ArrayBuffer || ArrayBuffer.isView(src);
+        });
+        var sources = await Promise.all(keys.map(async function (key) {
           var src = urls[key];
           if (src instanceof ArrayBuffer || ArrayBuffer.isView(src)) return src;
           var res = await fetch(src);
@@ -339,7 +345,10 @@ var pdfFromHtml = (function (global) {
           return res.arrayBuffer();
         }));
         for (var i = 0; i < keys.length; i++) {
-          this._fonts[keys[i]] = await pdf.embedFont(bytes[i], { subset: true });
+          // Google's variable WOFF2 files can hang fontkit's subsetter on some
+          // glyph sequences, so imported faces embed in full. Bundled TTF faces
+          // keep the smaller subsetted embedding.
+          this._fonts[keys[i]] = await pdf.embedFont(sources[i], { subset: !rawFonts[i] });
         }
         if (this._fonts.bn && !global.fontkit) {
           this.fontWarning = ' (Bengali needs fontkit)';
