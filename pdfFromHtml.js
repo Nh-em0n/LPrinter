@@ -1834,9 +1834,12 @@ var pdfFromHtml = (function (global) {
     }
 
     code(b) {
-      var fs = Math.max(11, this.o.fontSize + 0.5);
-      var lineH = fs * 1.6;
-      var pad = 18;
+      // Code blocks used to be noticeably larger than body copy (bigger font,
+      // wide padding and a tall trailing gap). Keep them visually distinct with
+      // the card background, but size them close to the surrounding text.
+      var fs = Math.max(9, this.o.fontSize - 0.5);
+      var lineH = fs * 1.45;
+      var pad = 10;
       var flat = [];
       String(b.text || '').split('\n').forEach(function (line) {
         var wrapped = this.wrap([{ text: line || ' ', code: true, codeBlock: true }], this.contentW - pad * 2, fs);
@@ -1878,7 +1881,7 @@ var pdfFromHtml = (function (global) {
         chunk.push(line);
       }, this);
       flush();
-      this.y += 16;
+      this.y += 10;
     }
 
     // Render a nested block inside a list item. Shifting the left margin lets
