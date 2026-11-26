@@ -58,6 +58,32 @@ Notes:
 - Only PDF configuration choices are persisted in `localStorage` (`lprinter:options`);
   the document itself always comes from the URL.
 
+## URL options
+
+PDF configuration can also be passed as query parameters. The HTML payload stays in
+the fragment, so the URL looks like:
+
+```
+http://localhost:8080/LocalPrinter/index.html?filename=report&theme=slate&page_size=A4&page_number=true&toc=true&footer=Confidential&watermark=DRAFT#PGgxPkhlbGxvPC9oMT4...
+```
+
+| Parameter | Aliases | Effect |
+| --- | --- | --- |
+| `filename` | `name` | Download filename (without `.pdf`) |
+| `theme` | — | `mint`, `slate`, `navy`, `navyblue`, `ink`, `crimsonred` |
+| `page_size` | `pagesize`, `size` | `A4` or `Letter` |
+| `page_number` | `page_numbers`, `pagenumbers` | Show page numbers |
+| `toc` | `auto_toc`, `table_of_contents` | Insert table of contents |
+| `footer` | `footer_text`, `footerText` | Footer text on every page |
+| `watermark` | — | Faint diagonal watermark |
+
+Booleans accept `true` / `1` / `yes` / `on` and `false` / `0` / `no` / `off`.
+URL-encode text values with `encodeURIComponent()` when they contain spaces or
+special characters. Extra `&` separators (e.g. `&&`) are ignored.
+
+URL options override saved configuration when the page loads and whenever the URL
+changes. Manual edits in the left panel still apply until the URL changes again.
+
 Very large HTML documents produce very long URLs; some browsers, proxies and web
 servers limit URL length. For big documents, prefer a local server over `file://`
 and keep the payload reasonably small.

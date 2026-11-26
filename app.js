@@ -443,12 +443,67 @@
     configTimer = window.setTimeout(generate, RENDER_DELAY_MS);
   }
 
+  // ---------- options from URL query parameters ----------
+  // The HTML stays in the fragment; these control the PDF configuration.
+  // Example: ?filename=report&theme=slate&toc=true&page_number=false
+  //          &footer=Confidential&watermark=DRAFT#<base64>
+  function paramValue(params, names) {
+    for (const name of names) {
+      if (params.has(name)) return params.get(name);
+    }
+    return null;
+  }
+
+  function parseBool(value, fallback) {
+    if (value === null) return fallback;
+    const v = value.trim().toLowerCase();
+    if (v === '1' || v === 'true' || v === 'yes' || v === 'on') return true;
+    if (v === '0' || v === 'false' || v === 'no' || v === 'off' || v === '') return false;
+    return fallback;
+  }
+
+  function applyUrlOptions() {
+    const params = new URLSearchParams(location.search);
+
+    const filename = paramValue(params, ['filename', 'name']);
+    if (filename !== null && filename.trim()) $('filename').value = filename.trim();
+
+    const theme = paramValue(params, ['theme']);
+    if (theme && THEMES[theme.trim().toLowerCase()]) applyTheme(theme.trim().toLowerCase());
+
+    const pageSize = paramValue(params, ['page_size', 'pagesize', 'size']);
+    if (pageSize) {
+      const v = pageSize.trim().toLowerCase();
+      if (v === 'a4') $('pageSize').value = 'A4';
+      else if (v === 'letter') $('pageSize').value = 'Letter';
+    }
+
+    const numbers = parseBool(
+      paramValue(params, ['page_number', 'page_numbers', 'pagenumber', 'pagenumbers']),
+      $('pageNumbers').checked
+    );
+    $('pageNumbers').checked = numbers;
+
+    const toc = parseBool(
+      paramValue(params, ['toc', 'auto_toc', 'autotoc', 'table_of_contents']),
+      $('autoToc').checked
+    );
+    $('autoToc').checked = toc;
+
+    const footer = paramValue(params, ['footer', 'footer_text', 'footertext']);
+    if (footer !== null) $('footerText').value = footer;
+
+    const watermark = paramValue(params, ['watermark']);
+    if (watermark !== null) $('watermark').value = watermark;
+  }
+
   // Re-check the URL periodically. A history.replaceState() or hash change
   // made from the console does not always fire an event, and the snapshot
   // guard prevents repeated polls from resetting the debounce timer.
   function checkSource() {
     if (location.href === lastSnapshot) return;
     lastSnapshot = location.href;
+    applyUrlOptions();
     scheduleGenerate();
   }
 
@@ -535,6 +590,10 @@
   if (typeof savedOptions.footerText === 'string') $('footerText').value = savedOptions.footerText;
   if (typeof savedOptions.watermark === 'string') $('watermark').value = savedOptions.watermark;
   if (typeof savedOptions.filename === 'string' && savedOptions.filename) $('filename').value = savedOptions.filename;
+
+  // URL parameters override saved configuration; the document itself comes
+  // from the fragment.
+  applyUrlOptions();
 
   generate();
 })();
