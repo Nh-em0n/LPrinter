@@ -17,7 +17,7 @@ If you prefer a local server:
 ```bash
 cd LocalPrinter
 python3 -m http.server 8080
-# visit http://localhost:8080/LocalPrinter/index.html?html=<base64>
+# visit http://localhost:8080/LocalPrinter/index.html#<base64>
 ```
 
 An internet connection is needed on first load for the CDN libraries and the
@@ -26,27 +26,29 @@ error instead of staying on the “Building PDF…” spinner.
 
 ## Source
 
-Pass the HTML in the query string as UTF-8 base64:
+Pass the HTML in the URL fragment as UTF-8 base64:
 
 ```
-http://localhost:8080/LocalPrinter/index.html?html=PGgxPkhlbGxvPC9oMT4...
+http://localhost:8080/LocalPrinter/index.html#PGgxPkhlbGxvPC9oMT4...
 ```
 
 You can build that URL from the browser console with the helper exposed by `app.js`:
 
 ```js
 const html = '<h1>Hello</h1>\n<p>Rendered by LocalPrinter.</p>';
-location.href = 'index.html?html=' + encodeURIComponent(LPrinterCodec.utf8ToBase64(html));
+location.hash = LPrinterCodec.utf8ToBase64(html);
 ```
 
 Notes:
 
-- The normal parameter is `html`. `data`, `content`, `b64`, `base64` and
-  `htmlBase64` are also accepted (case-insensitive). A bare base64 payload in
-  the URL hash (`#<base64>`) works too.
-- Raw `+` characters are restored if the query value was not URL-encoded, URL-safe
+- The canonical form is a bare `#<base64>`. `#html=<base64>` is also accepted,
+  along with `data`, `content`, `b64`, `base64` and `htmlBase64` keys.
+  Older `?html=<base64>` links still work as a fallback.
+- The fragment is not sent to the server, so long documents do not trigger a
+  GitHub Pages "URI Too Long" error.
+- Raw `+` characters are restored if the value was not URL-encoded, URL-safe
   base64 (`-` / `_`) and omitted `=` padding are accepted.
-- If the parameter is missing, or the value is not valid base64, the preview shows
+- If the payload is missing, or the value is not valid base64, the preview shows
   **No content found** / an explicit base64 error, and Download/Print are disabled.
 - The HTML is sanitized with DOMPurify before rendering.
 - The URL is polled every second, so changing it with `history.replaceState()` from

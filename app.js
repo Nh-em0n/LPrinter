@@ -152,7 +152,8 @@
   const OPTIONS_KEY = 'lprinter:options';
   const RENDER_DELAY_MS = 2000;
   const POLL_INTERVAL_MS = 1000;
-  // The HTML is passed in the page URL as base64, e.g. ?html=<base64>.
+  // The HTML is passed as base64 in the URL fragment, e.g. #<base64>.
+  // ?html=<base64> links are still accepted as a fallback.
   const URL_KEYS = ['html', 'data', 'content', 'b64', 'base64', 'htmlbase64'];
 
   const $ = (id) => document.getElementById(id);
@@ -276,18 +277,24 @@
   }
 
   function base64FromLocation() {
+    const fragment = location.hash.replace(/^#/, '');
+    if (fragment) {
+      // Also allow #html=<base64> (and the aliases) inside the fragment.
+      if (/^\s*(?:html|data|content|b64|base64|htmlbase64)\s*=/i.test(fragment)) {
+        const hashParams = new URLSearchParams(fragment);
+        for (const [key, value] of hashParams.entries()) {
+          if (URL_KEYS.indexOf(key.toLowerCase()) >= 0 && value) return value;
+        }
+      }
+      // Canonical form: the fragment itself is the base64 payload.
+      if (/^[A-Za-z0-9+/\-_=\s]+$/.test(fragment)) return fragment;
+    }
+    // Backwards-compatible fallback for older ?html=<base64> links.
     const params = new URLSearchParams(location.search);
     for (const [key, value] of params.entries()) {
       if (URL_KEYS.indexOf(key.toLowerCase()) >= 0 && value) return value;
     }
-    const hash = location.hash.replace(/^#/, '');
-    if (!hash) return '';
-    const hashParams = new URLSearchParams(hash);
-    for (const [key, value] of hashParams.entries()) {
-      if (URL_KEYS.indexOf(key.toLowerCase()) >= 0 && value) return value;
-    }
-    // A bare base64 payload in the hash is accepted too.
-    return /^[A-Za-z0-9+/\-_=\s]+$/.test(hash) ? hash : '';
+    return '';
   }
 
   function readSource() {
@@ -324,9 +331,9 @@
     showOverlay(false);
     $('sourceOrigin').textContent = 'Looking in: ' + location.href;
     if (sourceProblem === 'invalid') {
-      setStatus('Error: invalid base64 in URL. Use ?html=<base64>.', true);
+      setStatus('Error: invalid base64 in URL. Use #<base64>.', true);
     } else {
-      setStatus('No HTML content found in URL. Use ?html=<base64>.');
+      setStatus('No HTML content found in URL. Use #<base64>.');
     }
   }
 
