@@ -74,7 +74,8 @@ http://localhost:8080/LocalPrinter/index.html?filename=report&theme=slate&page_s
 | `theme` | — | `mint`, `slate`, `navy`, `navyblue`, `ink`, `crimsonred` |
 | `page_size` | `pagesize`, `size` | `A4` or `Letter` |
 | `page_number` | `page_numbers`, `pagenumbers` | Show page numbers |
-| `toc` | `auto_toc`, `table_of_contents` | Insert a numbered table of contents with page indices |
+| `toc` | `auto_toc`, `table_of_contents` | Insert a table of contents |
+| `toc_index` | `tocindex`, `index_toc`, `toc_numbers` | Number TOC entries and show page indices (default `true`) |
 | `footer` | `footer_text`, `footerText` | Footer text on every page |
 | `watermark` | — | Faint diagonal watermark |
 
@@ -95,8 +96,8 @@ and keep the payload reasonably small.
 
 - **PDF configuration** (left): filename, **Use filename as header** (on by
   default — prepends an `<h1>` with the filename), theme template, page size,
-  page numbers, table of contents (numbered `1.`, `1.1.` … with page indices),
-  footer text and watermark.
+  page numbers, table of contents, **Index table of contents** (on by default —
+  numbers entries `1.`, `1.1.` … with page indices), footer text and watermark.
 - **Rendered PDF** (right): live PDF preview built with `pdfFromHtml.js`.
 - **Refresh** — rebuild from the current URL payload.
 - **Print PDF** — send the rendered PDF to the browser print dialog.

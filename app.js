@@ -178,6 +178,7 @@
     filenameAsHeader: true,
     pageNumbers: true,
     autoToc: false,
+    tocIndex: true,
     footerText: '',
     watermark: ''
   };
@@ -368,6 +369,7 @@
       state.pageSize = $('pageSize').value;
       state.pageNumbers = $('pageNumbers').checked;
       state.autoToc = $('autoToc').checked;
+      state.tocIndex = $('tocIndex').checked;
       state.footerText = $('footerText').value.trim();
       state.watermark = $('watermark').value.trim();
       state.filenameAsHeader = $('filenameHeader').checked;
@@ -396,6 +398,7 @@
         fontFamily: state.fontFamily,
         pageNumbers: state.pageNumbers,
         autoToc: state.autoToc,
+        tocIndex: state.tocIndex,
         footerText: state.footerText,
         watermark: state.watermark,
         colors: themeColors(state.primary),
@@ -431,6 +434,7 @@
         margin: state.margin,
         pageNumbers: state.pageNumbers,
         autoToc: state.autoToc,
+        tocIndex: state.tocIndex,
         footerText: state.footerText,
         watermark: state.watermark,
         filename: $('filename').value
@@ -508,6 +512,12 @@
     );
     $('autoToc').checked = toc;
 
+    const tocIndex = parseBool(
+      paramValue(params, ['toc_index', 'tocindex', 'index_toc', 'indextoc', 'toc_numbers', 'tocnumber']),
+      $('tocIndex').checked
+    );
+    $('tocIndex').checked = tocIndex;
+
     const footer = paramValue(params, ['footer', 'footer_text', 'footertext']);
     if (footer !== null) $('footerText').value = footer;
 
@@ -581,7 +591,7 @@
     scheduleGenerate();
   });
 
-  ['pageSize', 'pageNumbers', 'autoToc', 'filename', 'filenameHeader', 'footerText', 'watermark'].forEach((id) => {
+  ['pageSize', 'pageNumbers', 'autoToc', 'tocIndex', 'filename', 'filenameHeader', 'footerText', 'watermark'].forEach((id) => {
     $(id).addEventListener('input', scheduleGenerate);
     $(id).addEventListener('change', scheduleGenerate);
   });
@@ -605,6 +615,7 @@
   if (savedOptions.pageSize) $('pageSize').value = savedOptions.pageSize;
   if (typeof savedOptions.pageNumbers === 'boolean') $('pageNumbers').checked = savedOptions.pageNumbers;
   if (typeof savedOptions.autoToc === 'boolean') $('autoToc').checked = savedOptions.autoToc;
+  if (typeof savedOptions.tocIndex === 'boolean') $('tocIndex').checked = savedOptions.tocIndex;
   if (typeof savedOptions.footerText === 'string') $('footerText').value = savedOptions.footerText;
   if (typeof savedOptions.watermark === 'string') $('watermark').value = savedOptions.watermark;
   if (typeof savedOptions.filename === 'string' && savedOptions.filename) $('filename').value = savedOptions.filename;
