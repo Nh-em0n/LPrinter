@@ -103,6 +103,8 @@ and keep the payload reasonably small.
   name or a Google Fonts link to override the theme font), page size,
   page numbers, table of contents, **Index table of contents** (on by default —
   numbers entries `1.`, `1.1.` … with page indices), footer text and watermark.
+- **Links** use light teal (`#2dd4bf`) in every theme; fonts and other typography
+  are unchanged.
 - **Rendered PDF** (right): live PDF preview built with `pdfFromHtml.js`.
 - **Refresh** — rebuild from the current URL payload.
 - **Print PDF** — send the rendered PDF to the browser print dialog.
