@@ -1630,21 +1630,34 @@ var pdfFromHtml = (function (global) {
           lines: this.wrap(inlines, textW - indent, fs)
         };
       }, this);
-      var rowsH = rows.reduce(function (n, r) { return n + r.lines.length * lh; }, 0);
       var headH = headLines.length * headSize * 1.3;
-      var height = headH + 5 + 10 + rowsH + 6;
-      this.ensure(height);
+      var headerH = headH + 5 + 10;
+      // The heading and rule are repeated at the top of every TOC page.
+      var drawHeader = function () {
+        var top = this.y;
+        this.drawLines(headLines, this.m.left, top, this.contentW, {
+          fontSize: headSize, lineHeight: headSize * 1.3, color: this.col('heading')
+        });
+        top += headH + 5;
+        this.line(this.m.left, top, this.m.left + this.contentW, top, this.C.border, 0.6);
+        this.y = top + 10;
+      };
 
-      var top = this.y;
-      this.drawLines(headLines, this.m.left, top, this.contentW, {
-        fontSize: headSize, lineHeight: headSize * 1.3, color: this.col('heading')
-      });
-      top += headH + 5;
-      this.line(this.m.left, top, this.m.left + this.contentW, top, this.C.border, 0.6);
-      top += 10;
-
+      var started = false;
       rows.forEach(function (row) {
-        var rowTop = top;
+        var rowH = Math.max(row.lines.length * lh, fs * 1.3);
+        // Check the whole row, not just the block as a whole: a long TOC must
+        // flow onto new pages instead of being drawn past the bottom margin.
+        if (this.y + (started ? 0 : headerH) + rowH > this.maxY) {
+          this.newPage();
+          started = false;
+        }
+        if (!started) {
+          drawHeader.call(this);
+          started = true;
+        }
+
+        var rowTop = this.y;
         if (row.entry.num) {
           var nw = this.measure(row.entry.num, { bold: true }, fs);
           this.drawMixed(row.entry.num, rowTop + fs, fs, { bold: true, number: true },
@@ -1655,9 +1668,9 @@ var pdfFromHtml = (function (global) {
         // The heading's page is not known until later blocks are laid out, so
         // remember where to draw the index in finishToc().
         this.tocRows.push({ id: row.entry.id, page: this.page, top: rowTop + fs, size: fs });
-        top += row.lines.length * lh;
+        this.y += rowH;
       }, this);
-      this.y = top + 6;
+      if (started) this.y += 6;
     }
 
     // Draw page indices beside TOC rows once all heading anchors are known.
