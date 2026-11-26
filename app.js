@@ -267,7 +267,7 @@
       codeBg: '#f3f6f9',
       codeBorder: '#d8dee4',
       codeFg: '#2b3440',
-      inlineCodeBg: mix(p, '#ffffff', 0.90),
+      inlineCodeFg: '#db2777',
       mark: mix(p, '#ffffff', 0.84),
       tableHeaderBg: mix(p, '#000000', 0.35),
       tableHeaderText: '#ffffff',

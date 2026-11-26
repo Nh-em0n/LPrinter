@@ -125,7 +125,7 @@ var pdfFromHtml = (function (global) {
       codeBg: '#f3f6f9',
       codeBorder: '#d8dee4',
       codeFg: '#2b3440',
-      inlineCodeBg: '#e8ebef',
+      inlineCodeFg: '#db2777',
       mark: '#e4e7eb',
       tableHeaderBg: '#14334f',
       tableHeaderText: '#ffffff',
@@ -1415,7 +1415,8 @@ var pdfFromHtml = (function (global) {
       style = style || {};
       if (style.number) return this.col('accent');
       if (style.link) return this.col('link');
-      if (style.code) return this.col('codeFg');
+      if (style.codeBlock) return this.col('codeFg');
+      if (style.code) return this.col('inlineCodeFg');
       if (style.mark) return this.col('heading');
       if (style.strike) return this.col('muted');
       return this.col('text');
@@ -1456,9 +1457,6 @@ var pdfFromHtml = (function (global) {
             // inline decorations
             if (s.mark) {
               this.rect(cx - 1.5, cursorY + seg.size * 0.08, seg.w + 3, seg.size * 1.1, this.C.mark);
-            }
-            if (s.code && !s.codeBlock) {
-              this.rect(cx - 2, cursorY + seg.size * 0.08, seg.w + 4, seg.size * 1.1, this.C.inlineCodeBg);
             }
             var font = this.font(s);
             var base = seg.baseSize || fontSize;
