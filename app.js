@@ -211,9 +211,9 @@
     return '#' + part(0) + part(2) + part(4);
   }
 
-  // Links are the same light teal in every theme; the font and all other
-  // typography stay exactly as they are.
-  const LINK_COLOR = '#2dd4bf';
+  // Links are the same GitHub-style light blue in every theme; the font and all
+  // other typography stay exactly as they are.
+  const LINK_COLOR = '#58a6ff';
 
   // Tint the neutral white/light-gray surfaces with the theme's primary colour.
   // Tables use a darkened shade of the theme colour for the header and light borders on white rows.
